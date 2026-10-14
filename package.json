@@ -1,0 +1,30 @@
+{
+  "name": "auto-romaneio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --target node22 --clean",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "axios": "^1.20.0",
+    "dotenv": "^18.0.7",
+    "fs": "^0.0.1-security",
+    "mssql": "^12.7.6",
+    "path": "^0.12.7"
+  }
+}
