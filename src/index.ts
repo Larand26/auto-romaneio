@@ -1,5 +1,8 @@
 import { processDocxFiles } from "./services/romaneios.service";
-import { processProductData } from "./services/products.service";
+import {
+  processProductData,
+  checkProductsInDatabaseAndSite,
+} from "./services/products.service";
 
 async function start(): Promise<void> {
   try {
@@ -8,8 +11,13 @@ async function start(): Promise<void> {
     const extractedTexts = await processDocxFiles();
     // separa (manufactor_code, color_code, barcode) de cada produto do romaneio
     const productData = await processProductData(extractedTexts);
-    console.log("Dados dos produtos extraídos:", productData);
-    // verifica se o produto existe no banco de dados e site
+    // console.log("Dados dos produtos extraídos:", productData);
+    // verifica se o produto existe no banco de dados e site e retorna os produtos que não foram encontrados
+    const notFoundProducts = await checkProductsInDatabaseAndSite(productData);
+    console.log(
+      "Produtos não encontrados no banco de dados e site:",
+      notFoundProducts,
+    );
     // busca as fotos do produto no site da grendene e as baixa na pasta de fotos (output)
     // faz um relatório de produtos que não foram encontrados no banco de dados e site
   } catch (error) {}

@@ -1,4 +1,5 @@
 import type { Product } from "../types/product.model";
+import { findProductsByBarCodes } from "../repositories/product.repository";
 
 export async function processProductData(
   extractedTexts: string[],
@@ -32,15 +33,10 @@ export async function processProductData(
       const manufacturer_code = firstToken.substring(0, 5);
       const color_code = firstToken.substring(6, 11);
 
-      const secondSpaceIndex = l.indexOf(" ", spaceIndex2 + 1);
-      const barcodeRaw =
-        secondSpaceIndex === -1
-          ? l.substring(spaceIndex1 + 1, spaceIndex2)
-          : l.substring(spaceIndex1 + 1, secondSpaceIndex);
+      const barcodeRaw = l.substring(spaceIndex1 + 1, spaceIndex2);
       const barcode = barcodeRaw.replace("]", "1");
 
-      const name =
-        secondSpaceIndex === -1 ? "" : l.substring(secondSpaceIndex + 1);
+      const name = l.substring(spaceIndex2 + 1);
 
       if (!manufacturer_code || !barcode) {
         console.warn(`Linha inválida: ${l}`);
@@ -61,4 +57,23 @@ export async function processProductData(
   // Aguarda a resolução de todos os arrays processados e os une em um único array final
   const results = await Promise.all(promises);
   return results.flat();
+}
+
+export async function checkProductsInDatabaseAndSite(
+  productData: Product[],
+): Promise<Product[]> {
+  const notFoundProducts: Product[] = [];
+  const barcodes = productData.map((product) => product.barcode);
+  const foundProducts = await findProductsByBarCodes(barcodes);
+
+  const foundBarcodes = new Set(
+    foundProducts.map((product) => product.barcode),
+  );
+
+  for (const product of productData) {
+    if (!foundBarcodes.has(product.barcode)) {
+      notFoundProducts.push(product);
+    }
+  }
+  return notFoundProducts;
 }
