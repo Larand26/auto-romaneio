@@ -38,7 +38,7 @@ async function downloadProductImage(
 
 export async function processProductImages(
   products: Product[],
-): Promise<any[]> {
+): Promise<Product[]> {
   // filtra produtos repetidos com base no manufacturer_code e color_code
   const filteredProducts: Product[] = [];
   const seen = new Set<string>();

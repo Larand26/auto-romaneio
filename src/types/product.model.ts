@@ -3,4 +3,5 @@ export interface Product {
   color_code: string;
   barcode: string;
   name: string;
+  success?: boolean;
 }
