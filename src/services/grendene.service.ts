@@ -9,7 +9,7 @@ async function downloadProductImage(
   manufacturerCode: string,
   colorCode: string,
   position: string,
-): Promise<Boolean> {
+): Promise<{ success: boolean; photo?: Buffer }> {
   try {
     const imageUrl = `https://api-uai.grendene.com.br/api/material/getmaterial?n=${manufacturerCode}${colorCode}${position}&d=IMAGEM_GRANDE_JPG`;
     const response = await axios.get(imageUrl, {
@@ -29,10 +29,10 @@ async function downloadProductImage(
     );
 
     await fs.writeFile(imagePath, Buffer.from(response.data));
-    return true;
+    return { success: true, photo: Buffer.from(response.data) };
   } catch (error) {
     await sleep(1000); // Aguarda 1 segundo antes de tentar novamente
-    return false;
+    return { success: false };
   }
 }
 
@@ -53,7 +53,7 @@ export async function processProductImages(
   const results: any[] = [];
   for (const product of filteredProducts) {
     for (let position = 0; position < 5; position++) {
-      const success = await downloadProductImage(
+      const result = await downloadProductImage(
         product.manufacturer_code,
         product.color_code,
         String(position).padStart(2, "0"),
@@ -63,10 +63,11 @@ export async function processProductImages(
         product.manufacturer_code,
         product.color_code,
         position,
-        success,
+        result.success,
+        result.photo || null,
       );
 
-      if (!success) break;
+      if (!result.success) break;
     }
   }
   return results;
