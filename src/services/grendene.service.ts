@@ -39,34 +39,35 @@ async function downloadProductImage(
 export async function processProductImages(
   products: Product[],
 ): Promise<Product[]> {
-  // filtra produtos repetidos com base no manufacturer_code e color_code
-  const filteredProducts: Product[] = [];
+  // remove duplicados por manufacturer_code + color_code
   const seen = new Set<string>();
-  for (const product of products) {
+  const filteredProducts = products.filter((product) => {
     const key = `${product.manufacturer_code}-${product.color_code}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      filteredProducts.push(product);
-    }
-  }
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
-  const results: Product[] = [];
-  for (const product of filteredProducts) {
-    for (let position = 0; position < 5; position++) {
-      const result = await downloadProductImage(
-        product.manufacturer_code,
-        product.color_code,
-        String(position).padStart(2, "0"),
+  const perProduct = await Promise.all(
+    filteredProducts.map(async (product) => {
+      // as 4 posições do produto são baixadas em paralelo
+      const attempts = await Promise.all(
+        Array.from({ length: 4 }, async (_, i) => {
+          const position = String(i).padStart(2, "0");
+          const result = await downloadProductImage(
+            product.manufacturer_code,
+            product.color_code,
+            position,
+          );
+          return { ...product, position, ...result };
+        }),
       );
 
-      results.push({
-        ...product,
-        position: String(position).padStart(2, "0"),
-        ...result,
-      });
+      // reproduz o "break": mantém até a primeira falha (inclusive)
+      const firstFail = attempts.findIndex((r) => !r.success);
+      return firstFail === -1 ? attempts : attempts.slice(0, firstFail + 1);
+    }),
+  );
 
-      if (!result.success) break;
-    }
-  }
-  return results;
+  return perProduct.flat();
 }
