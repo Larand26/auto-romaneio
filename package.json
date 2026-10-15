@@ -27,6 +27,7 @@
     "fs": "^0.0.1-security",
     "mssql": "^12.7.6",
     "path": "^0.12.7",
+    "pdfkit": "^0.20.2",
     "tesseract.js": "^7.0.0"
   }
 }
