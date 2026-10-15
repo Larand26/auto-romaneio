@@ -7,10 +7,7 @@ import path from "node:path";
 
 export async function generatePDF(products: Product[]): Promise<string> {
   const outputDirectory = env.OUTPUT_REPORT_PATH || ".";
-  const outputPath = path.join(
-    outputDirectory,
-    "relatorio-ativacao-produtos.pdf",
-  );
+  const outputPath = path.join(outputDirectory, "relatorio-fotos-produtos.pdf");
 
   try {
     await mkdir(outputDirectory, { recursive: true });
@@ -21,12 +18,14 @@ export async function generatePDF(products: Product[]): Promise<string> {
       margin: 30,
     });
     const outputStream = createWriteStream(outputPath);
+    const tableWidth = 700;
+    const tableX = (document.page.width - tableWidth) / 2;
 
     document.pipe(outputStream);
     document
       .fontSize(18)
       .fillColor("#333333")
-      .text("Relatório de Ativação de Produtos");
+      .text("Relatório de Fotos de Produtos");
     document
       .fontSize(10)
       .fillColor("#333333")
@@ -41,6 +40,9 @@ export async function generatePDF(products: Product[]): Promise<string> {
             property: "photo",
             width: 55,
             align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
             renderer: (
               value,
               _indexColumn,
@@ -69,11 +71,47 @@ export async function generatePDF(products: Product[]): Promise<string> {
             label: "Código do Fabricante",
             property: "manufacturer_code",
             width: 105,
+            align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
           },
-          { label: "Nome do Produto", property: "name", width: 260 },
-          { label: "Código da Cor", property: "color_code", width: 75 },
-          { label: "Posição", property: "position", width: 60 },
-          { label: "Código de barras", property: "barcode", width: 100 },
+          {
+            label: "Nome do Produto",
+            property: "name",
+            width: 305,
+            align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
+          },
+          {
+            label: "Código da Cor",
+            property: "color_code",
+            width: 75,
+            align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
+          },
+          {
+            label: "Posição",
+            property: "position",
+            width: 60,
+            align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
+          },
+          {
+            label: "Código de barras",
+            property: "barcode",
+            width: 100,
+            align: "center",
+            valign: "center",
+            headerColor: "#f16064",
+            headerOpacity: 1,
+          },
         ],
         data: products.map((product) => ({
           photo: product.photo ? "" : "-",
@@ -87,10 +125,8 @@ export async function generatePDF(products: Product[]): Promise<string> {
         })),
       },
       {
-        width:
-          document.page.width -
-          document.page.margins.left -
-          document.page.margins.right,
+        width: tableWidth,
+        x: tableX,
         padding: 6,
         minRowHeight: 55,
         columnSpacing: 4,
@@ -102,7 +138,7 @@ export async function generatePDF(products: Product[]): Promise<string> {
           document.font("Helvetica-Bold").fontSize(9).fillColor("white");
         },
         prepareRow: () => {
-          document.font("Helvetica").fontSize(8).fillColor("#333333");
+          document.font("Helvetica-Bold").fontSize(8).fillColor("#333333");
         },
       },
     );
@@ -113,6 +149,7 @@ export async function generatePDF(products: Product[]): Promise<string> {
       outputStream.once("error", reject);
     });
 
+    console.log(`PDF gerado com sucesso: ${outputPath}`);
     return outputPath;
   } catch (error) {
     console.error("Erro ao gerar o PDF:", error);
