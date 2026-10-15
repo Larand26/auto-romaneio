@@ -4,5 +4,6 @@ export interface Product {
   barcode: string;
   name: string;
   success?: boolean;
+  position?: string;
   photo?: Buffer;
 }

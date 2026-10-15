@@ -4,6 +4,7 @@ import {
   checkProductsInDatabaseAndSite,
 } from "./services/products.service";
 import { processProductImages } from "./services/grendene.service";
+import { generatePDF } from "./services/pdf.service";
 
 async function start(): Promise<void> {
   try {
@@ -16,6 +17,7 @@ async function start(): Promise<void> {
     // busca as fotos do produto no site da grendene e as baixa na pasta de fotos (output)
     const imageResults = await processProductImages(notFoundProducts);
     // faz um relatório de produtos que não foram encontrados no banco de dados e site
+    const pdfPath = await generatePDF(imageResults);
   } catch (error) {}
 }
 start();

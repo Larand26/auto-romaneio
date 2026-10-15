@@ -50,7 +50,7 @@ export async function processProductImages(
     }
   }
 
-  const results: any[] = [];
+  const results: Product[] = [];
   for (const product of filteredProducts) {
     for (let position = 0; position < 5; position++) {
       const result = await downloadProductImage(
@@ -59,13 +59,11 @@ export async function processProductImages(
         String(position).padStart(2, "0"),
       );
 
-      results.push(
-        product.manufacturer_code,
-        product.color_code,
-        position,
-        result.success,
-        result.photo || null,
-      );
+      results.push({
+        ...product,
+        position: String(position).padStart(2, "0"),
+        ...result,
+      });
 
       if (!result.success) break;
     }
